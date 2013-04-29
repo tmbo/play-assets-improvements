@@ -12,19 +12,25 @@ trait AssetProvider { this: Controller =>
    * This is to be implemented by the concrete class and is supposed to be a
    * call to the reverse router for the at(path, file) call.
    */
-  protected def assetReverseRoute(file: String): Call
+  protected def assetReverseRoute(asset: PiplineAsset): Call
 
   /**
    * This is the method that will be called by the router to serve the
    * asset to the client.
    */
-  def at(path: String, file: String): Action[AnyContent]
-
+  def at(asset: PiplineAsset): Action[AnyContent]
+      
+  def bind(file: String): PiplineAsset
+  
   /**
    * This is the method that will be called by the templates mostly to get
    * a Call that enables them to get the external URL of the asset.
    */
-  def at(file: String): Call
+  def unbind(asset: PiplineAsset): String
+  
+  def pathFor(asset: PiplineAsset): String
+  
+  def defaultPath: String
 }
 
 object ResultWithHeaders {

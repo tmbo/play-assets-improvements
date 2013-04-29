@@ -16,12 +16,12 @@ import play.api.mvc.AnyContent
  * See [[http://kaioa.com/node/45 this link for more info]].
  */
 trait SvgzAssetSupport extends AssetProvider { this: Controller =>
-  abstract override def at(path: String, file: String): Action[AnyContent] = {
-    if (!file.endsWith(".svgz")) {
-      super.at(path, file)
+  abstract override def at(asset: PiplineAsset): Action[AnyContent] = {
+    if (!asset.file.endsWith(".svgz")) {
+      super.at(asset)
     } else {
       Action { request =>
-        val result = super.at(path, file).apply(request).asInstanceOf[ResultWithHeaders]
+        val result = super.at(asset).apply(request).asInstanceOf[ResultWithHeaders]
 
         result.withHeaders(
           "Content-Encoding" -> "gzip",

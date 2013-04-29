@@ -15,6 +15,7 @@ import play.api.Logger
 import com.google.common.io.ByteStreams
 import com.google.common.io.InputSupplier
 import java.io.InputStream
+import play.api.mvc.PathBindable
 
 /**
  * Pipelines fingerprinting for your static assets, which allows you to improve site
@@ -28,14 +29,16 @@ import java.io.InputStream
  * We got some inspiration from ruby on rails, but the solution was a bit obvious.
  * http://guides.rubyonrails.org/asset_pipeline.html#what-is-fingerprinting-and-why-should-i-care
  */
+case class PiplineAsset(file: String, path: String) {
+  val resourceName = Option(path + "/" + file).map(name => if (name.startsWith("/")) name else ("/" + name)).get
+}
+
 trait FingerprintedAssets extends AssetProvider { this: Controller =>
   import java.net.URL
 
   private val fileToFingerprinted = new ConcurrentHashMap[String, String]()
 
-  private val fingerprintConstant = "-fp-"
-
-  def defaultPath: String
+  private val fingerprintConstant = "-v"
 
   val cacheControlMaxAgeInSeconds: Int
 
@@ -46,44 +49,39 @@ trait FingerprintedAssets extends AssetProvider { this: Controller =>
    * striped out of its name and the checksum matches the checksum in the fingerprint.  Otherwise
    * it will just return whatever the super.at(path, file) returns.
    */
-  abstract override def at(path: String, file: String): Action[AnyContent] = {
+  abstract override def bind(file: String): PiplineAsset = {
     val (baseFilename, extension) = splitFilename(file)
     if (!baseFilename.contains(fingerprintConstant)) { // this may not have been fingerprinted, we should fall back to without fingerprinting
-      super.at(path, file)
+      super.bind(file)
     } else {
       val (originalBaseFilename, fingerprint) = file.splitAt(file.lastIndexOf(fingerprintConstant))
       val originalFilename = originalBaseFilename + "." + extension
 
-      val originalOrFingerprinted = originalOrFingerprint(originalFilename)
+      val originalOrFingerprinted = originalOrFingerprint(PiplineAsset(originalFilename, defaultPath))
 
       originalOrFingerprinted.fold(
         originalFilename => {
-          Logger.info("Could not find asset at " + originalFilename + " for file =" + file + " in path = " + path)
-          super.at(path, file) // maybe another asset provider knows what to do with this 
+          Logger.info("Could not find asset at " + originalFilename + " for file =" + file)
+          super.bind(file) // maybe another asset provider knows what to do with this 
         },
         fingerprintedFilename => {
           if (fingerprintedFilename != file) {
             Logger.info("expected checksum = " + file + " but we a file with a different checksum = " + fingerprintedFilename)
-            super.at(path, file) // again, this asset provider doesn't have this asset
+            super.bind(file) // again, this asset provider doesn't have this asset
           } else {
-            Action { request =>
-              val action = super.at(path, originalFilename)
-              val result = action.apply(request)
-              val resultWithHeaders = result.asInstanceOf[ResultWithHeaders]
-              resultWithHeaders.withHeaders(CACHE_CONTROL -> cacheControlMaxAge)
-            }
+            super.bind(originalFilename)
           }
         })
     }
   }
 
-  abstract override def at(file: String): Call = {
-    val originalOrFingerprinted = originalOrFingerprint(file)
+  abstract override def unbind(asset: PiplineAsset): String = {
+    val originalOrFingerprinted = originalOrFingerprint(asset)
 
     originalOrFingerprinted.fold({
-      originalFilename => super.at(originalFilename)
+      originalFilename => super.unbind(asset.copy(file = originalFilename))
     }, {
-      fingerprintedFilename => super.at(fingerprintedFilename)
+      fingerprintedFilename => super.unbind(asset.copy(file = fingerprintedFilename))
     })
   }
 
@@ -91,31 +89,32 @@ trait FingerprintedAssets extends AssetProvider { this: Controller =>
    * If there the original file exists and can be fingerprinted or has been fingerprinted the
    * fingerprinted filename is on the Right, otherwise the originalFilename is on the Left.
    */
-  private def originalOrFingerprint(originalFilename: String): Either[String, String] = {
-    if (fileToFingerprinted.contains(originalFilename)) {
-      Right(fileToFingerprinted.get(originalFilename))
+  private def originalOrFingerprint(asset: PiplineAsset): Either[String, String] = {
+    if (fileToFingerprinted.contains(asset.resourceName)) {
+      Right(fileToFingerprinted.get(asset.resourceName))
     } else {
-      defaultUrl(originalFilename) match {
+      defaultUrl(asset.resourceName) match {
         case None =>
-          Left(originalFilename)
+          Left(asset.file)
         case Some(url) =>
-          val fingerprintedFilename = fingerprintFile(originalFilename, url)
+          val fingerprintedFilename = fingerprintFile(asset, url)
           Right(fingerprintedFilename)
       }
     }
   }
 
   private def defaultUrl(file: String) = {
-    Play.resource(defaultPath + "/" + file)
+    Play.resource(file)
   }
 
   // Updates the fileToFingerprinted map with the fingerprinted file
-  private def fingerprintFile(file: String, url: URL): String = {
+  private def fingerprintFile(asset: PiplineAsset, url: URL): String = {
     val checksum = getChecksum(url)
-    val (baseFilename, extension) = splitFilename(file)
-    val fingerprintedFilename = baseFilename + fingerprintConstant + checksum + "." + extension
+    val (baseFilename, extension) = splitFilename(asset.file)
+    val fingerprintedFilename = 
+      baseFilename + fingerprintConstant + checksum + "." + extension
 
-    fileToFingerprinted.put(file, fingerprintedFilename)
+    fileToFingerprinted.put(asset.resourceName, fingerprintedFilename)
     fingerprintedFilename
   }
 
