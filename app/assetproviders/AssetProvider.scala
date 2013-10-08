@@ -2,6 +2,10 @@ package assetproviders
 
 import play.api.mvc._
 
+case class PiplineAsset(file: String, path: String) {
+  val resourceName = Option(path + "/" + file).map(name => if (name.startsWith("/")) name else ("/" + name)).get
+}
+
 /**
  * This simple interface is meant to mimic the existing interface in Play 2.0
  * for the Assets controller it provides.  By implementing this it is possible
@@ -28,6 +32,9 @@ trait AssetProvider { this: Controller =>
    */
   def unbind(asset: PiplineAsset): String
   
+  
+  def pathFor(file: String): String = pathFor(PiplineAsset(file, defaultPath))
+
   def pathFor(asset: PiplineAsset): String
   
   def defaultPath: String

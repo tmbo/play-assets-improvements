@@ -36,7 +36,9 @@ trait RemoteAssets extends AssetProvider { this: Controller =>
     val action = super.at(asset)
     val result = action.apply(request)
     val resultWithHeaders = result.asInstanceOf[ResultWithHeaders]
-    resultWithHeaders.withHeaders(DATE -> df.print({ new java.util.Date }.getTime))
+    resultWithHeaders.withHeaders(
+      DATE -> df.print({ new java.util.Date }.getTime),
+      "Access-Control-Allow-Origin" -> "*")
   }
 
   abstract override def pathFor(asset: PiplineAsset): String = {

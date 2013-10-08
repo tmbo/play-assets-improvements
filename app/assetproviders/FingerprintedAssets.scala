@@ -29,9 +29,6 @@ import play.api.mvc.PathBindable
  * We got some inspiration from ruby on rails, but the solution was a bit obvious.
  * http://guides.rubyonrails.org/asset_pipeline.html#what-is-fingerprinting-and-why-should-i-care
  */
-case class PiplineAsset(file: String, path: String) {
-  val resourceName = Option(path + "/" + file).map(name => if (name.startsWith("/")) name else ("/" + name)).get
-}
 
 trait FingerprintedAssets extends AssetProvider { this: Controller =>
   import java.net.URL
