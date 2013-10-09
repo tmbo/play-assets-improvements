@@ -4,7 +4,6 @@ import assetproviders.ResultWithHeaders.ResultWithHeaders
 import java.io.File
 import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
-import com.google.common.io.Files
 import play.api.Play.current
 import play.api.mvc.Action
 import play.api.mvc.Controller
@@ -12,10 +11,11 @@ import play.api.mvc.AnyContent
 import play.api.mvc.Call
 import play.api.Play
 import play.api.Logger
-import com.google.common.io.ByteStreams
-import com.google.common.io.InputSupplier
 import java.io.InputStream
 import play.api.mvc.PathBindable
+import java.util.zip.{CRC32, Checksum, CheckedInputStream}
+import com.google.common.io.{InputSupplier, ByteStreams, Files}
+import com.google.common.hash.Hashing
 
 /**
  * Pipelines fingerprinting for your static assets, which allows you to improve site
@@ -116,14 +116,13 @@ trait FingerprintedAssets extends AssetProvider { this: Controller =>
   }
 
   private def getChecksum(url: URL): Long = {
-    val assetStream = url.openStream()
-    val inputSupplier = new InputSupplier[InputStream]() {
-      override def getInput(): InputStream = {
-        assetStream
-      }
+    //val assetStream = url.openStream()
+    val is = new InputSupplier[InputStream]{
+      def getInput() : InputStream =
+        url.openStream()
     }
 
-    ByteStreams.getChecksum(inputSupplier, new java.util.zip.CRC32)
+    ByteStreams.hash(is, Hashing.crc32).padToLong()
   }
 
   private def splitFilename(filename: String): (String, String) = {

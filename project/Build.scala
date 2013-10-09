@@ -18,7 +18,7 @@ object BuildSettings {
     scalaVersion := "2.10.2",
     javaOptions in test ++= Seq("-Xmx512m", "-XX:MaxPermSize=512m"),
     scalacOptions ++= Seq("-unchecked", "-deprecation" /*, "-Xlog-implicits", "-Yinfer-debug", "-Xprint:typer", "-Yinfer-debug", "-Xlog-implicits", "-Xprint:typer"*/ ),
-    scalacOptions in (Compile, doc) ++= Seq("-unchecked", "-deprecation", "-diagrams", "-implicits"),
+    scalacOptions in (Compile, doc) ++= Seq("-unchecked", "-deprecation", "-implicits"),
     shellPrompt := ShellPrompt.buildShellPrompt,
     mappings in (Compile, packageBin) ~= filter,
     mappings in (Compile, packageSrc) ~= filter,
@@ -101,7 +101,7 @@ object Resolvers {
 }
 
 object Dependencies {
-
+  val googleGuave = "com.google.guava" % "guava" % "15.0"
 }
 
 object BraingamesLibraries extends Build {
@@ -109,10 +109,10 @@ object BraingamesLibraries extends Build {
   import Resolvers._
   import Dependencies._
 
-  lazy val util = Project(
+  lazy val playAssetsImprovements = play.Project(
     "play-assets-improvements",
-    file("."),
+    buildVersion,
+    Seq(googleGuave),
     settings = buildSettings ++ Seq(
-      resolvers := resolversList,
-      libraryDependencies ++= Seq()))
+      resolvers := resolversList))
 }
