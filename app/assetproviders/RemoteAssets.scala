@@ -12,7 +12,7 @@ import play.api.mvc.Result
 import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.Call
-import play.api.Play
+import play.api.{Logger, Play}
 
 /**
  * Pipelines CDN access for static files. Mix this trait in and provide remoteContentUrl to
@@ -44,7 +44,7 @@ trait RemoteAssets extends AssetProvider { this: Controller =>
   abstract override def pathFor(asset: PiplineAsset): String = {
     remoteContentUrl match {
       case Some(contentUrl) =>
-        println("UNBINDING: " + super.pathFor(asset))
+        Logger.trace("Unbinding: " + super.pathFor(asset))
         contentUrl + super.pathFor(asset)
       case None =>
         super.pathFor(asset)
