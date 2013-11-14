@@ -1,4 +1,4 @@
-package assetproviders
+package com.scalableminds.assets
 
 import play.api.mvc._
 

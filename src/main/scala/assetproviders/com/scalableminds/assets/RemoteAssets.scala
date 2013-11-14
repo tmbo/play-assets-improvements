@@ -1,6 +1,6 @@
-package assetproviders
+package com.scalableminds.assets
 
-import assetproviders.ResultWithHeaders.ResultWithHeaders
+import ResultWithHeaders.ResultWithHeaders
 
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
@@ -32,7 +32,7 @@ trait RemoteAssets extends AssetProvider { this: Controller =>
   private val df: DateTimeFormatter =
     DateTimeFormat.forPattern("EEE, dd MMM yyyy HH:mm:ss '" + timeZoneCode + "'").withLocale(java.util.Locale.ENGLISH).withZone(DateTimeZone.forID(timeZoneCode))
 
-  abstract override def at(asset: PiplineAsset): Action[AnyContent] = Action { request =>
+  abstract override def at(asset: PiplineAsset): Action[AnyContent] = Action { implicit request =>
     val action = super.at(asset)
     val result = action.apply(request)
     val resultWithHeaders = result.asInstanceOf[ResultWithHeaders]

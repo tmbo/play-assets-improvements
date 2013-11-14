@@ -1,6 +1,6 @@
-package assetproviders
+package com.scalableminds.assets
 
-import assetproviders.ResultWithHeaders.ResultWithHeaders
+import ResultWithHeaders.ResultWithHeaders
 import play.api.mvc.Action
 import play.api.mvc.Controller
 import play.api.mvc.AnyContent

@@ -1,16 +1,8 @@
 import sbt._
 import Keys._
-import play.Project._
 
 object BuildSettings {
   val buildVersion = scala.io.Source.fromFile("version").mkString.trim
-
-  val filter = { (ms: Seq[(File, String)]) =>
-    ms filter {
-      case (file, path) =>
-        path != "logback.xml" && !path.startsWith("toignore") && !path.startsWith("samples")
-    }
-  }
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "com.scalableminds",
@@ -19,10 +11,7 @@ object BuildSettings {
     javaOptions in test ++= Seq("-Xmx512m", "-XX:MaxPermSize=512m"),
     scalacOptions ++= Seq("-unchecked", "-deprecation" /*, "-Xlog-implicits", "-Yinfer-debug", "-Xprint:typer", "-Yinfer-debug", "-Xlog-implicits", "-Xprint:typer"*/ ),
     scalacOptions in (Compile, doc) ++= Seq("-unchecked", "-deprecation", "-implicits"),
-    shellPrompt := ShellPrompt.buildShellPrompt,
-    mappings in (Compile, packageBin) ~= filter,
-    mappings in (Compile, packageSrc) ~= filter,
-    mappings in (Compile, packageDoc) ~= filter) ++ Publish.settings // ++ Format.settings
+    shellPrompt := ShellPrompt.buildShellPrompt) ++ Publish.settings // ++ Format.settings
 }
 
 object Publish {
@@ -95,13 +84,12 @@ object ShellPrompt {
 }
 
 object Resolvers {
-  val resolversList = Seq(
-
-    )
+  val resolversList = Seq()
 }
 
 object Dependencies {
-  val googleGuave = "com.google.guava" % "guava" % "15.0"
+  val play = "com.typesafe.play" %% "play" % "2.2.0"
+  val guava = "com.google.guava" % "guava" % "15.0"
 }
 
 object BraingamesLibraries extends Build {
@@ -109,10 +97,10 @@ object BraingamesLibraries extends Build {
   import Resolvers._
   import Dependencies._
 
-  lazy val playAssetsImprovements = play.Project(
+  lazy val playAssetsImprovements = Project(
     "play-assets-improvements",
-    buildVersion,
-    Seq(googleGuave),
+    file("."),
     settings = buildSettings ++ Seq(
+      libraryDependencies ++= Seq(play, guava),
       resolvers := resolversList))
 }

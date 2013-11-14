@@ -1,6 +1,6 @@
-package assetproviders
+package com.scalableminds.assets
 
-import assetproviders.ResultWithHeaders.ResultWithHeaders
+import ResultWithHeaders.ResultWithHeaders
 import java.io.File
 import java.net.URL
 import java.util.concurrent.ConcurrentHashMap

@@ -1,10 +1,6 @@
-package assetproviders
+package com.scalableminds.assets
 
 import play.api.mvc._
-
-case class PiplineAsset(file: String, path: String) {
-  val resourceName = Option(path + "/" + file).map(name => if (name.startsWith("/")) name else ("/" + name)).get
-}
 
 /**
  * This simple interface is meant to mimic the existing interface in Play 2.0
@@ -38,9 +34,4 @@ trait AssetProvider { this: Controller =>
   def pathFor(asset: PiplineAsset): String
   
   def defaultPath: String
-}
-
-object ResultWithHeaders {
-  import play.api.mvc.Result
-  type ResultWithHeaders = Result { def withHeaders(headers: (String, String)*): Result }
 }
