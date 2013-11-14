@@ -13,6 +13,7 @@ import play.api.mvc.Action
 import play.api.mvc.AnyContent
 import play.api.mvc.Call
 import play.api.{Logger, Play}
+import play.api.libs.concurrent.Execution.Implicits._
 
 /**
  * Pipelines CDN access for static files. Mix this trait in and provide remoteContentUrl to
@@ -32,13 +33,13 @@ trait RemoteAssets extends AssetProvider { this: Controller =>
   private val df: DateTimeFormatter =
     DateTimeFormat.forPattern("EEE, dd MMM yyyy HH:mm:ss '" + timeZoneCode + "'").withLocale(java.util.Locale.ENGLISH).withZone(DateTimeZone.forID(timeZoneCode))
 
-  abstract override def at(asset: PiplineAsset): Action[AnyContent] = Action { implicit request =>
+  abstract override def at(asset: PiplineAsset): Action[AnyContent] = Action.async{ implicit request =>
     val action = super.at(asset)
-    val result = action.apply(request)
-    val resultWithHeaders = result.asInstanceOf[ResultWithHeaders]
-    resultWithHeaders.withHeaders(
-      DATE -> df.print({ new java.util.Date }.getTime),
-      "Access-Control-Allow-Origin" -> "*")
+    action.apply(request).map{ result =>
+      result.withHeaders(
+        DATE -> df.print({ new java.util.Date }.getTime),
+        "Access-Control-Allow-Origin" -> "*")
+      }
   }
 
   abstract override def pathFor(asset: PiplineAsset): String = {
