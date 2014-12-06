@@ -27,3 +27,5 @@ GET     /assets/*file               controllers.MyAssets.at(path=controllers.MyA
 ```
 
 4. Replace all "routes.Assets.at" with "RemoteAssets.at" in your project.  (note, you no longer need the "routes." because you are no longer using the reverse router.)
+
+This content is released under the (Link Goes Here) MIT License.
