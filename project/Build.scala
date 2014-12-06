@@ -1,37 +1,44 @@
 import sbt._
 import Keys._
+import xerial.sbt.Sonatype.SonatypeKeys._
 
 object BuildSettings {
   val buildVersion = scala.io.Source.fromFile("version").mkString.trim
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
-    organization := "com.scalableminds",
     version := buildVersion,
-    scalaVersion := "2.10.2",
+    scalaVersion := "2.11.2",
     javaOptions in test ++= Seq("-Xmx512m", "-XX:MaxPermSize=512m"),
     scalacOptions ++= Seq("-unchecked", "-deprecation" /*, "-Xlog-implicits", "-Yinfer-debug", "-Xprint:typer", "-Yinfer-debug", "-Xlog-implicits", "-Xprint:typer"*/ ),
     scalacOptions in (Compile, doc) ++= Seq("-unchecked", "-deprecation", "-implicits"),
-    shellPrompt := ShellPrompt.buildShellPrompt) ++ Publish.settings // ++ Format.settings
+    shellPrompt := ShellPrompt.buildShellPrompt)
 }
 
 object Publish {
-  object TargetRepository {
-    def scmio: Project.Initialize[Option[sbt.Resolver]] = version { (version: String) =>
-      val rootDir = "/srv/maven/"
-      val path =
-        if (version.trim.endsWith("SNAPSHOT")) 
-          rootDir + "snapshots/" 
-        else 
-          rootDir + "releases/" 
-      Some(Resolver.sftp("scm.io intern repo", "scm.io", 44144, path))
-    }
-  }
   lazy val settings = Seq(
     publishMavenStyle := true,
-    publishTo <<= TargetRepository.scmio,
     publishArtifact in Test := false,
     pomIncludeRepository := { _ => false },
-    homepage := Some(url("http://scm.io")))
+    organization := "com.scalableminds",
+    organizationName := "scalable minds UG (haftungsbeschränkt) & Co. KG",
+    organizationHomepage := Some(url("http://scalableminds.com")),
+    startYear := Some(2014),
+    profileName := "com.scalableminds",
+    description := "Play framework 2.x module to provide an assets pipeline for compressing and fingerprinting assets",
+    licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+    homepage := Some(url("https://github.com/sclableminds/play-mongev")),
+    scmInfo := Some(ScmInfo(url("https://github.com/sclableminds/play-mongev"), "https://github.com/scalableminds/play-mongev.git")),
+    pomExtra := (
+      <developers>
+        <developer>
+          <id>tmbo</id>
+          <name>Tom Bocklisch</name>
+          <email>tom.bocklisch@scalableminds.com</email>
+          <url>http://github.com/tmbo</url>
+        </developer>
+      </developers>
+      )
+  )
 }
 
 object Colors {
@@ -88,11 +95,11 @@ object Resolvers {
 }
 
 object Dependencies {
-  val play = "com.typesafe.play" %% "play" % "2.2.0"
+  val play = "com.typesafe.play" %% "play" % "2.3.5"
   val guava = "com.google.guava" % "guava" % "15.0"
 }
 
-object BraingamesLibraries extends Build {
+object ApplicationBuild extends Build {
   import BuildSettings._
   import Resolvers._
   import Dependencies._
@@ -100,7 +107,7 @@ object BraingamesLibraries extends Build {
   lazy val playAssetsImprovements = Project(
     "play-assets-improvements",
     file("."),
-    settings = buildSettings ++ Seq(
+    settings = xerial.sbt.Sonatype.sonatypeSettings ++ Publish.settings ++ buildSettings ++ Seq(
       libraryDependencies ++= Seq(play, guava),
       resolvers := resolversList))
 }
