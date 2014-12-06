@@ -25,11 +25,16 @@ object Publish {
     startYear := Some(2014),
     profileName := "com.scalableminds",
     description := "Play framework 2.x module to provide an assets pipeline for compressing and fingerprinting assets",
-    licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-    homepage := Some(url("https://github.com/sclableminds/play-mongev")),
-    scmInfo := Some(ScmInfo(url("https://github.com/sclableminds/play-mongev"), "https://github.com/scalableminds/play-mongev.git")),
+    licenses := Seq("MIT" -> url("https://raw.githubusercontent.com/myyk/play-assets-improvements/353307ccad1d59a582789940ea1ee73ca3cae5b6/LICENSE")),
+    homepage := Some(url("https://github.com/tmbo/play-asset-improvements")),
+    scmInfo := Some(ScmInfo(url("https://github.com/tmbo/play-asset-improvements"), "https://github.com/tmbo/play-asset-improvements.git")),
     pomExtra := (
       <developers>
+        <developer>
+          <id>myyk</id>
+          <name>Myyk Seok</name>
+          <url>http://github.com/myyk</url>
+        </developer>
         <developer>
           <id>tmbo</id>
           <name>Tom Bocklisch</name>

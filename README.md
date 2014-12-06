@@ -1,6 +1,22 @@
-First, I want to thank James Ward for this code which I largely used for this module.  Specifically, this implementation is inspired by this blog: http://www.jamesward.com/2012/08/08/edge-caching-with-play2-heroku-cloudfront
+## Assets improvements plugin for Play 2.3
 
-With this 'module' you can get CDNs working easy.
+based on the assets improvements plugin of myyk.
+
+With this 'module' you can get CDNs working easy. It fingerprints assets and allowes remote deployment to CDNs of the
+assets.
+
+## Installation
+
+The package is published to sonatype and should get synced to maven central.
+
+You need to add the package as a dependency:
+
+```
+libraryDependencies += "com.scalableminds" %% "play-assets-improvements" % "2.3.0"
+```
+
+
+## Configuration
 
 1. Add the dependency on this module.
 
